@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ejemplos de Chat - Relay v2.2</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .header { text-align: center; color: white; margin-bottom: 3rem; }
+    .header h1 {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #e94560, #ff6b9d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header p { font-size: 1.25rem; opacity: 0.8; margin-bottom: 1rem; }
+    .header .version {
+      display: inline-block;
+      background: rgba(255,255,255,0.1);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.875rem;
+    }
+    .examples-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+    .example-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 2rem;
+      transition: all 0.3s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .example-card:hover {
+      transform: translateY(-5px);
+      border-color: #e94560;
+      box-shadow: 0 10px 30px rgba(233, 69, 96, 0.3);
+    }
+    .example-card .icon { font-size: 3rem; margin-bottom: 1rem; }
+    .example-card h2 { color: white; font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .example-card p { color: #aaa; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem; }
+    .example-card .features {
+      list-style: none;
+      color: #888;
+      font-size: 0.85rem;
+      margin-top: 1rem;
+    }
+    .example-card .features li {
+      margin-bottom: 0.5rem;
+      padding-left: 1.5rem;
+      position: relative;
+    }
+    .example-card .features li:before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #00ff88;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 4rem;
+      color: #888;
+      font-size: 0.875rem;
+    }
+    .footer a { color: #e94560; text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>💬 Ejemplos de Chat</h1>
+      <p>Demostrando el poder de Coderic Relay v2.2</p>
+      <span class="version">v2.2.0 - Rooms + WebRTC</span>
+    </div>
+    <div class="examples-grid">
+      <a href="chat-basico.html" class="example-card">
+        <div class="icon">💬</div>
+        <h2>Chat Básico</h2>
+        <p>Chat en tiempo real multi-usuario. Ejemplo fundamental de comunicación con Relay.</p>
+        <ul class="features">
+          <li>Mensajería en tiempo real</li>
+          <li>Multi-usuario</li>
+          <li>Presencia de usuarios</li>
+          <li>API básica de Relay</li>
+        </ul>
+      </a>
+      <a href="chat-rooms.html" class="example-card">
+        <div class="icon">🏠</div>
+        <h2>Chat con Rooms</h2>
+        <p>Chat segmentado por rooms. Únete a múltiples salas y chatea con grupos específicos.</p>
+        <ul class="features">
+          <li>Múltiples rooms</li>
+          <li>Crear rooms dinámicamente</li>
+          <li>Mensajes por room</li>
+          <li>API de rooms (v2.1+)</li>
+        </ul>
+      </a>
+      <a href="chat-video.html" class="example-card">
+        <div class="icon">📹</div>
+        <h2>Chat con Video</h2>
+        <p>Combina chat de texto con video llamadas. Comunícate por texto y video simultáneamente.</p>
+        <ul class="features">
+          <li>Chat de texto</li>
+          <li>Video llamadas P2P</li>
+          <li>Audio en tiempo real</li>
+          <li>Plugin WebRTC (v2.2+)</li>
+        </ul>
+      </a>
+      <a href="llamadas-webrtc.html" class="example-card">
+        <div class="icon">📞</div>
+        <h2>Llamadas WebRTC</h2>
+        <p>Aplicación completa de llamadas de video. Múltiples participantes, controles y más.</p>
+        <ul class="features">
+          <li>Video llamadas grupales</li>
+          <li>Compartir pantalla</li>
+          <li>Controles de audio/video</li>
+          <li>Topología mesh P2P</li>
+        </ul>
+      </a>
+    </div>
+    <div class="footer">
+      <p>
+        Powered by <a href="https://github.com/Coderic/relay" target="_blank">Coderic Relay</a> |
+        <a href="https://relay.coderic.net" target="_blank">Documentación</a> |
+        <a href="https://github.com/Coderic/chat" target="_blank">Repositorio</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>
