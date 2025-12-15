@@ -41,18 +41,26 @@ class WebRTCManager {
 
   handleJoined(data) {
     this.roomId = data.roomId;
-    data.peers?.forEach(peerId => this.createPeerConnection(peerId, true));
+    // Los peers vienen como peerIds del servidor
+    data.peers?.forEach(peerId => {
+      if (peerId !== this.socket.id) {
+        this.createPeerConnection(peerId, true);
+      }
+    });
   }
 
   handlePeerJoined(data) {
-    const { socketId } = data;
-    if (!this.peers.has(socketId)) {
-      this.createPeerConnection(socketId, false);
+    const { peerId, socketId } = data;
+    // Usar peerId como identificador principal
+    const targetPeerId = peerId || socketId;
+    if (targetPeerId && targetPeerId !== this.socket.id && !this.peers.has(targetPeerId)) {
+      this.createPeerConnection(targetPeerId, true); // true para crear offer
     }
   }
 
   async handleOffer(data) {
     const { from, to, offer } = data;
+    // 'to' es el peerId (socket.id del destinatario)
     if (to !== this.socket.id) return;
     let pc = this.peers.get(from);
     if (!pc) pc = this.createPeerConnection(from, false);
@@ -63,7 +71,7 @@ class WebRTCManager {
       destino: 'room',
       room: this.roomId,
       tipo: 'webrtc:answer',
-      to: from,
+      to: from, // from es el peerId del emisor
       answer: pc.localDescription
     });
   }
@@ -83,7 +91,10 @@ class WebRTCManager {
   }
 
   handlePeerLeft(data) {
-    this.closePeerConnection(data.socketId || data.peerId);
+    const peerId = data.peerId || data.socketId;
+    if (peerId) {
+      this.closePeerConnection(peerId);
+    }
   }
 
   createPeerConnection(peerId, createOffer) {
