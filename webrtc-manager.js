@@ -178,6 +178,14 @@ class WebRTCManager {
     }
   }
 
+  closePeerConnection(peerId) {
+    const pc = this.peers.get(peerId);
+    if (pc) {
+      pc.close();
+      this.peers.delete(peerId);
+    }
+  }
+
   destroy() {
     this.peers.forEach((pc) => pc.close());
     this.peers.clear();
