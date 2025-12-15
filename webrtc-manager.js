@@ -18,6 +18,7 @@ class WebRTCManager {
   setupSocketHandlers() {
     this.socket.on('relay', (data) => {
       if (!data.tipo?.startsWith('webrtc:')) return;
+      console.log(`[WebRTC] Evento recibido: ${data.tipo}`, data);
       switch (data.tipo) {
         case 'webrtc:joined':
           this.handleJoined(data);
@@ -37,26 +38,39 @@ class WebRTCManager {
         case 'webrtc:peer-left':
           this.handlePeerLeft(data);
           break;
+        default:
+          console.log(`[WebRTC] Tipo de evento desconocido: ${data.tipo}`);
       }
     });
   }
 
   handleJoined(data) {
+    console.log(`[WebRTC] webrtc:joined recibido:`, data);
     this.roomId = data.roomId;
+    const peersCount = data.peers?.length || 0;
+    console.log(`[WebRTC] Peers existentes en room: ${peersCount}`);
     // Los peers vienen como peerIds del servidor
     data.peers?.forEach(peerId => {
       if (peerId !== this.socket.id) {
+        console.log(`[WebRTC] Creando conexión con peer existente: ${peerId}`);
         this.createPeerConnection(peerId, true);
       }
     });
+    if (peersCount === 0) {
+      console.log(`[WebRTC] No hay otros peers en el room, esperando...`);
+    }
   }
 
   handlePeerJoined(data) {
+    console.log(`[WebRTC] webrtc:peer-joined recibido:`, data);
     const { peerId, socketId } = data;
     // Usar peerId como identificador principal
     const targetPeerId = peerId || socketId;
     if (targetPeerId && targetPeerId !== this.socket.id && !this.peers.has(targetPeerId)) {
+      console.log(`[WebRTC] Nuevo peer se unió, creando conexión: ${targetPeerId}`);
       this.createPeerConnection(targetPeerId, true); // true para crear offer
+    } else {
+      console.log(`[WebRTC] Ignorando peer-joined (ya existe o es yo): ${targetPeerId}`);
     }
   }
 
@@ -206,8 +220,10 @@ class WebRTCManager {
 
   async joinRoom(roomId) {
     this.roomId = roomId;
+    console.log(`[WebRTC] Uniéndose a room: ${roomId}`);
     this.socket.emit('unirse', roomId, (ok) => {
       if (ok) {
+        console.log(`[WebRTC] Unido a Socket.io room: ${roomId}, enviando webrtc:join`);
         this.socket.emit('relay', {
           destino: 'room',
           room: roomId,
@@ -215,6 +231,9 @@ class WebRTCManager {
           roomId,
           peerId: this.socket.id
         });
+        console.log(`[WebRTC] webrtc:join enviado con peerId: ${this.socket.id}`);
+      } else {
+        console.error(`[WebRTC] Error al unirse a Socket.io room: ${roomId}`);
       }
     });
   }
