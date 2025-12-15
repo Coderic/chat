@@ -284,7 +284,9 @@
   <script src="webrtc-manager.js"></script>
   <script>
     const RELAY_URL = 'https://demo.relay.coderic.net';
-    const socket = io(`${RELAY_URL}/relay`);
+    const socket = io(`${RELAY_URL}/relay`, {
+      transports: ['websocket', 'polling']
+    });
     
     let usuario = null;
     let webrtc = null;

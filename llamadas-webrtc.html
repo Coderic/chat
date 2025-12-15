@@ -370,7 +370,9 @@
     }
 
     const RELAY_URL = 'https://demo.relay.coderic.net';
-    const socket = io(`${RELAY_URL}/relay`);
+    const socket = io(`${RELAY_URL}/relay`, {
+      transports: ['websocket', 'polling']
+    });
     
     let webrtc = null;
     let localStream = null;
