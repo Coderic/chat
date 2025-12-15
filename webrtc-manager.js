@@ -221,7 +221,21 @@ class WebRTCManager {
   async joinRoom(roomId) {
     this.roomId = roomId;
     console.log(`[WebRTC] Uniéndose a room: ${roomId}`);
+    console.log(`[WebRTC] Socket ID: ${this.socket.id}`);
+    console.log(`[WebRTC] Socket conectado: ${this.socket.connected}`);
+    
+    // Verificar que el socket esté conectado
+    if (!this.socket.connected) {
+      console.error(`[WebRTC] Socket no está conectado, esperando...`);
+      this.socket.once('connect', () => {
+        console.log(`[WebRTC] Socket conectado, reintentando unirse...`);
+        this.joinRoom(roomId);
+      });
+      return;
+    }
+    
     this.socket.emit('unirse', roomId, (ok) => {
+      console.log(`[WebRTC] Callback de 'unirse' recibido:`, ok);
       if (ok) {
         console.log(`[WebRTC] Unido a Socket.io room: ${roomId}, enviando webrtc:join`);
         this.socket.emit('relay', {
@@ -236,6 +250,9 @@ class WebRTCManager {
         console.error(`[WebRTC] Error al unirse a Socket.io room: ${roomId}`);
       }
     });
+    
+    // También escuchar eventos de relay para ver si llegan
+    console.log(`[WebRTC] Esperando eventos webrtc:joined o webrtc:peer-joined...`);
   }
 
   toggleAudio(enabled) {
