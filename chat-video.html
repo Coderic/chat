@@ -283,7 +283,7 @@
   <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
   <script src="webrtc-manager.js"></script>
   <script>
-    const RELAY_URL = 'https://demo.relay.coderic.net';
+    const RELAY_URL = 'wss://demo.relay.coderic.net';
     const socket = io(`${RELAY_URL}/relay`, {
       transports: ['websocket', 'polling']
     });

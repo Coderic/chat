@@ -3,7 +3,7 @@
  * Cliente JavaScript para conectarse al gateway Relay
  * 
  * Uso:
- *   const relay = new RelayConector('https://demo.relay.coderic.net');
+ *   const relay = new RelayConector('wss://demo.relay.coderic.net');
  *   await relay.conectar();
  *   await relay.identificar('miUsuario');
  *   relay.enviarATodos({ mensaje: 'Hola!' });
@@ -11,7 +11,7 @@
  */
 
 class RelayConector {
-  constructor(url = 'https://demo.relay.coderic.net') {
+  constructor(url = 'wss://demo.relay.coderic.net') {
     this.url = url;
     this.socket = null;
     this.usuario = null;
