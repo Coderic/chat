@@ -11,7 +11,7 @@
  */
 
 class RelayConector {
-  constructor(url = 'http://localhost:5000') {
+  constructor(url = 'http://demo.relay.coderic.net') {
     this.url = url;
     this.socket = null;
     this.usuario = null;

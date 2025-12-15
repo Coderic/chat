@@ -283,7 +283,7 @@
   <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
   <script src="webrtc-manager.js"></script>
   <script>
-    const RELAY_URL = window.location.origin.replace(/:\d+$/, ':5000') || 'http://localhost:5000';
+    const RELAY_URL = 'http://demo.relay.coderic.net';
     const socket = io(`${RELAY_URL}/relay`);
     
     let usuario = null;
