@@ -1,5 +1,5 @@
 {
-  "name": "relay-ejemplo-chat",
+  "name": "chat",
   "version": "1.0.0",
   "description": "Ejemplo de Chat en tiempo real usando Relay Gateway",
   "main": "index.html",
@@ -12,7 +12,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Coderic/relay-ejemplo-chat"
+    "url": "https://github.com/Coderic/chat"
   }
 }
 
