@@ -318,7 +318,18 @@
             
             webrtc = new WebRTCManager(socket);
             webrtc.onRemoteStream = (peerId, stream) => {
+              console.log('Stream remoto recibido de:', peerId);
               addVideoElement(peerId, stream, `Peer ${peerId.substring(0, 6)}`);
+            };
+            
+            webrtc.onPeerDisconnected = (peerId) => {
+              console.log('Peer desconectado:', peerId);
+              const videoElement = document.getElementById(`video-${peerId}`);
+              if (videoElement) videoElement.remove();
+            };
+            
+            webrtc.onConnectionStateChange = (peerId, state) => {
+              console.log(`Peer ${peerId} estado:`, state);
             };
             
             await webrtc.setLocalStream(localStream);
@@ -407,7 +418,8 @@
           audio: true
         });
         await webrtc.setLocalStream(screenStream);
-        document.querySelector('#video-local video').srcObject = screenStream;
+        const localVideo = document.querySelector('#video-local video');
+        if (localVideo) localVideo.srcObject = screenStream;
         localStream = screenStream;
       } catch (error) {
         console.error('Error compartiendo pantalla:', error);
