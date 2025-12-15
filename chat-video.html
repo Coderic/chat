@@ -41,6 +41,95 @@
       font-size: 1.25rem;
     }
     
+    .participants-section {
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .participants-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .participant-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    
+    .participant-item:hover {
+      background: rgba(255,255,255,0.08);
+    }
+    
+    .participant-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e94560, #ff6b9d);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 0.875rem;
+      flex-shrink: 0;
+    }
+    
+    .participant-info {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .participant-name {
+      color: white;
+      font-size: 0.875rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .participant-status {
+      font-size: 0.7rem;
+      color: #aaa;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #888;
+    }
+    
+    .status-dot.connected {
+      background: #00ff88;
+      box-shadow: 0 0 6px #00ff88;
+    }
+    
+    .status-dot.connecting {
+      background: #ffaa00;
+    }
+    
+    .status-dot.disconnected {
+      background: #ff4444;
+    }
+    
+    .participant-you {
+      background: rgba(233, 69, 96, 0.2);
+      border: 1px solid rgba(233, 69, 96, 0.3);
+    }
+    
     .chat-messages {
       flex: 1;
       overflow-y: auto;
@@ -370,6 +459,22 @@
 
   <div class="app-container hidden" id="app">
     <div class="sidebar">
+      <div class="participants-section">
+        <h2>👥 Participantes</h2>
+        <div class="participants-list" id="participantsList">
+          <div class="participant-item participant-you">
+            <div class="participant-avatar" id="myAvatar">-</div>
+            <div class="participant-info">
+              <div class="participant-name" id="myName">-</div>
+              <div class="participant-status">
+                <span class="status-dot connected"></span>
+                <span>Conectado</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <h2>💬 Chat</h2>
       <div class="chat-messages" id="mensajes"></div>
       <div class="chat-input">
@@ -451,6 +556,7 @@
     let localStream = null;
     const roomId = 'video-chat-room';
     let peerConnections = new Map();
+    let participants = new Map(); // peerId -> { name, state, socketId }
     let logCount = 0;
 
     function addLog(message, type = 'info') {
@@ -477,6 +583,83 @@
 
     function updatePeerCount() {
       updateStatus('peersCount', peerConnections.size.toString());
+      updateParticipantsList();
+    }
+    
+    function getInitials(name) {
+      return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    }
+    
+    function updateParticipantsList() {
+      const list = document.getElementById('participantsList');
+      // Limpiar lista (excepto el item "Tú")
+      const myItem = list.querySelector('.participant-you');
+      list.innerHTML = '';
+      if (myItem) {
+        list.appendChild(myItem);
+      }
+      
+      // Agregar otros participantes
+      participants.forEach((participant, peerId) => {
+        if (participant.name !== usuario) {
+          const item = document.createElement('div');
+          item.className = 'participant-item';
+          item.id = `participant-${peerId}`;
+          
+          const avatar = document.createElement('div');
+          avatar.className = 'participant-avatar';
+          avatar.textContent = getInitials(participant.name);
+          
+          const info = document.createElement('div');
+          info.className = 'participant-info';
+          
+          const name = document.createElement('div');
+          name.className = 'participant-name';
+          name.textContent = participant.name;
+          
+          const status = document.createElement('div');
+          status.className = 'participant-status';
+          
+          const statusDot = document.createElement('span');
+          statusDot.className = `status-dot ${participant.state || 'connecting'}`;
+          
+          const statusText = document.createElement('span');
+          const stateText = {
+            'connected': 'Conectado',
+            'connecting': 'Conectando...',
+            'disconnected': 'Desconectado',
+            'failed': 'Error'
+          };
+          statusText.textContent = stateText[participant.state] || 'Conectando...';
+          
+          status.appendChild(statusDot);
+          status.appendChild(statusText);
+          info.appendChild(name);
+          info.appendChild(status);
+          item.appendChild(avatar);
+          item.appendChild(info);
+          
+          list.appendChild(item);
+        }
+      });
+    }
+    
+    function addParticipant(peerId, name, state = 'connecting') {
+      participants.set(peerId, { name, state, socketId: peerId });
+      updateParticipantsList();
+    }
+    
+    function updateParticipantState(peerId, state) {
+      const participant = participants.get(peerId);
+      if (participant) {
+        participant.state = state;
+        updateParticipantsList();
+      }
+    }
+    
+    function removeParticipant(peerId) {
+      participants.delete(peerId);
+      updateParticipantsList();
     }
 
     socket.on('connect', () => {
@@ -504,6 +687,12 @@
           addLog(`Identificado como: ${usuario}`, 'success');
           updateStatus('userStatus', usuario);
           updateStatus('roomStatus', roomId);
+          
+          // Actualizar mi información en la lista
+          document.getElementById('myName').textContent = usuario;
+          document.getElementById('myAvatar').textContent = getInitials(usuario);
+          addParticipant(socket.id, usuario, 'connected');
+          
           document.getElementById('login').classList.add('hidden');
           document.getElementById('app').classList.remove('hidden');
           
@@ -519,8 +708,12 @@
             webrtc = new WebRTCManager(socket);
             webrtc.onRemoteStream = (peerId, stream) => {
               addLog(`Stream remoto recibido de: ${peerId.substring(0, 8)}...`, 'success');
-              addVideoElement(peerId, stream, `Peer ${peerId.substring(0, 6)}`);
+              // Intentar obtener el nombre del peer desde el mensaje de relay
+              const participant = participants.get(peerId);
+              const displayName = participant?.name || `Usuario ${peerId.substring(0, 6)}`;
+              addVideoElement(peerId, stream, displayName);
               peerConnections.set(peerId, { state: 'connected', stream });
+              updateParticipantState(peerId, 'connected');
               updatePeerCount();
               updateVideoStatus(peerId, 'connected');
             };
@@ -530,6 +723,7 @@
               const videoElement = document.getElementById(`video-${peerId}`);
               if (videoElement) videoElement.remove();
               peerConnections.delete(peerId);
+              removeParticipant(peerId);
               updatePeerCount();
             };
             
@@ -540,6 +734,7 @@
                 peer.state = state;
                 updateVideoStatus(peerId, state);
               }
+              updateParticipantState(peerId, state);
             };
             
             await webrtc.setLocalStream(localStream);
@@ -594,6 +789,16 @@
     socket.on('relay', (data) => {
       if (data.tipo === 'mensaje' && data.room === roomId) {
         agregarMensaje(data.usuario, data.texto, data.usuario === usuario);
+      }
+      
+      // Detectar cuando un nuevo usuario se une (por su mensaje o identificación)
+      if (data.tipo === 'webrtc:peer-joined' && data.socketId) {
+        // El nombre del usuario puede venir en el mensaje o necesitamos pedirlo
+        // Por ahora usamos el socketId como identificador temporal
+        const tempName = `Usuario ${data.socketId.substring(0, 6)}`;
+        if (!participants.has(data.socketId)) {
+          addParticipant(data.socketId, tempName, 'connecting');
+        }
       }
     });
 
