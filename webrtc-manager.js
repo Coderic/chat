@@ -136,6 +136,7 @@ class WebRTCManager {
     }
     pc.onicecandidate = (event) => {
       if (event.candidate) {
+        console.log(`[WebRTC] ICE candidate para ${peerId}:`, event.candidate.type);
         this.socket.emit('relay', {
           destino: 'room',
           room: this.roomId,
@@ -143,14 +144,29 @@ class WebRTCManager {
           to: peerId,
           candidate: event.candidate
         });
+      } else {
+        console.log(`[WebRTC] ICE gathering completado para ${peerId}`);
       }
     };
     pc.ontrack = (event) => {
+      console.log(`[WebRTC] Track recibido de ${peerId}:`, event.track.kind);
       if (this.onRemoteStream) this.onRemoteStream(peerId, event.streams[0]);
     };
     pc.onconnectionstatechange = () => {
-      if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
+      const state = pc.connectionState;
+      console.log(`[WebRTC] Estado de conexión ${peerId}: ${state}`);
+      if (this.onConnectionStateChange) {
+        this.onConnectionStateChange(peerId, state);
+      }
+      if (state === 'failed' || state === 'disconnected' || state === 'closed') {
         this.closePeerConnection(peerId);
+      }
+    };
+    pc.oniceconnectionstatechange = () => {
+      const iceState = pc.iceConnectionState;
+      console.log(`[WebRTC] ICE connection state ${peerId}: ${iceState}`);
+      if (iceState === 'failed' || iceState === 'disconnected') {
+        console.warn(`[WebRTC] ICE connection falló para ${peerId}`);
       }
     };
     this.peers.set(peerId, pc);
