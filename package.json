@@ -1,0 +1,18 @@
+{
+  "name": "relay-ejemplo-chat",
+  "version": "1.0.0",
+  "description": "Ejemplo de Chat en tiempo real usando Relay Gateway",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve -p 8000",
+    "dev": "npx serve -p 8000"
+  },
+  "keywords": ["relay", "chat", "websocket", "realtime", "ejemplo"],
+  "author": "NeftaliYagua",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Coderic/relay-ejemplo-chat"
+  }
+}
+
