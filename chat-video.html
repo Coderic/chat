@@ -17,10 +17,10 @@
     }
     
     .app-container {
-      max-width: 1400px;
+      max-width: 1600px;
       margin: 0 auto;
       display: grid;
-      grid-template-columns: 350px 1fr;
+      grid-template-columns: 350px 1fr 300px;
       gap: 1rem;
       height: calc(100vh - 2rem);
     }
@@ -133,6 +133,7 @@
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 1rem;
       margin-bottom: 1rem;
+      min-height: 200px;
     }
     
     .video-item {
@@ -158,6 +159,31 @@
       padding: 0.5rem 1rem;
       border-radius: 8px;
       font-size: 0.875rem;
+      z-index: 10;
+    }
+    
+    .video-status {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      z-index: 10;
+    }
+    
+    .video-status.connected {
+      background: rgba(0,255,0,0.7);
+    }
+    
+    .video-status.connecting {
+      background: rgba(255,165,0,0.7);
+    }
+    
+    .video-status.failed {
+      background: rgba(255,0,0,0.7);
     }
     
     .video-controls {
@@ -186,6 +212,78 @@
     .video-controls button.active {
       background: linear-gradient(135deg, #e94560, #ff6b9d);
     }
+    
+    .status-panel {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 1.5rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .status-panel h2 {
+      color: white;
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+    }
+    
+    .status-item {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .status-item label {
+      display: block;
+      color: #aaa;
+      font-size: 0.75rem;
+      margin-bottom: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .status-item .value {
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    
+    .status-item .value.connected {
+      color: #00ff88;
+    }
+    
+    .status-item .value.disconnected {
+      color: #ff4444;
+    }
+    
+    .status-item .value.connecting {
+      color: #ffaa00;
+    }
+    
+    .logs {
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      padding: 1rem;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      color: #aaa;
+    }
+    
+    .log-entry {
+      margin-bottom: 0.25rem;
+      padding: 0.25rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .log-entry.info { color: #4fc3f7; }
+    .log-entry.success { color: #00ff88; }
+    .log-entry.warning { color: #ffaa00; }
+    .log-entry.error { color: #ff4444; }
     
     .login-overlay {
       position: fixed;
@@ -243,6 +341,21 @@
     .hidden {
       display: none !important;
     }
+    
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+      text-align: center;
+      padding: 2rem;
+    }
+    
+    .empty-state h3 {
+      margin-bottom: 0.5rem;
+      font-size: 1.5rem;
+    }
   </style>
 </head>
 <body>
@@ -270,12 +383,55 @@
         <h2>📹 Video Llamada</h2>
         <div id="roomInfo">Room: <span id="roomName">-</span></div>
       </div>
-      <div class="video-grid" id="videoGrid"></div>
+      <div class="video-grid" id="videoGrid">
+        <div class="empty-state">
+          <h3>📹</h3>
+          <p>Esperando participantes...</p>
+        </div>
+      </div>
       <div class="video-controls">
         <button id="audioBtn" onclick="toggleAudio()">🎤 Audio</button>
         <button id="videoBtn" onclick="toggleVideo()">📹 Video</button>
         <button onclick="shareScreen()">🖥️ Pantalla</button>
         <button onclick="salir()">🚪 Salir</button>
+      </div>
+    </div>
+
+    <div class="status-panel">
+      <h2>📊 Estado</h2>
+      
+      <div class="status-item">
+        <label>Socket.io</label>
+        <div class="value" id="socketStatus">Desconectado</div>
+      </div>
+      
+      <div class="status-item">
+        <label>Usuario</label>
+        <div class="value" id="userStatus">-</div>
+      </div>
+      
+      <div class="status-item">
+        <label>Room</label>
+        <div class="value" id="roomStatus">-</div>
+      </div>
+      
+      <div class="status-item">
+        <label>Peers Conectados</label>
+        <div class="value" id="peersCount">0</div>
+      </div>
+      
+      <div class="status-item">
+        <label>STUN Servers</label>
+        <div class="value" style="font-size: 0.75rem; color: #aaa;">
+          • stun.l.google.com<br>
+          • stun1.l.google.com<br>
+          • stun.cloudflare.com
+        </div>
+      </div>
+      
+      <div class="status-item">
+        <label>Logs</label>
+        <div class="logs" id="logs"></div>
       </div>
     </div>
   </div>
@@ -294,9 +450,48 @@
     let videoEnabled = true;
     let localStream = null;
     const roomId = 'video-chat-room';
+    let peerConnections = new Map();
+    let logCount = 0;
+
+    function addLog(message, type = 'info') {
+      const logs = document.getElementById('logs');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logs.appendChild(entry);
+      logs.scrollTop = logs.scrollHeight;
+      logCount++;
+      if (logCount > 50) {
+        logs.removeChild(logs.firstChild);
+        logCount--;
+      }
+    }
+
+    function updateStatus(id, value, className = '') {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = value;
+        el.className = `value ${className}`;
+      }
+    }
+
+    function updatePeerCount() {
+      updateStatus('peersCount', peerConnections.size.toString());
+    }
 
     socket.on('connect', () => {
-      console.log('Conectado a Relay');
+      addLog('Conectado a Relay', 'success');
+      updateStatus('socketStatus', 'Conectado', 'connected');
+    });
+
+    socket.on('disconnect', () => {
+      addLog('Desconectado de Relay', 'error');
+      updateStatus('socketStatus', 'Desconectado', 'disconnected');
+    });
+
+    socket.on('connect_error', (error) => {
+      addLog(`Error de conexión: ${error.message}`, 'error');
+      updateStatus('socketStatus', 'Error', 'disconnected');
     });
 
     window.entrar = async function() {
@@ -306,44 +501,78 @@
       usuario = nombre;
       socket.emit('identificar', usuario, async (ok) => {
         if (ok) {
+          addLog(`Identificado como: ${usuario}`, 'success');
+          updateStatus('userStatus', usuario);
+          updateStatus('roomStatus', roomId);
           document.getElementById('login').classList.add('hidden');
           document.getElementById('app').classList.remove('hidden');
           
           // Iniciar video
           try {
+            addLog('Solicitando acceso a cámara/micrófono...', 'info');
             localStream = await navigator.mediaDevices.getUserMedia({
               video: true,
               audio: true
             });
+            addLog('Acceso a medios concedido', 'success');
             
             webrtc = new WebRTCManager(socket);
             webrtc.onRemoteStream = (peerId, stream) => {
-              console.log('Stream remoto recibido de:', peerId);
+              addLog(`Stream remoto recibido de: ${peerId.substring(0, 8)}...`, 'success');
               addVideoElement(peerId, stream, `Peer ${peerId.substring(0, 6)}`);
+              peerConnections.set(peerId, { state: 'connected', stream });
+              updatePeerCount();
+              updateVideoStatus(peerId, 'connected');
             };
             
             webrtc.onPeerDisconnected = (peerId) => {
-              console.log('Peer desconectado:', peerId);
+              addLog(`Peer desconectado: ${peerId.substring(0, 8)}...`, 'warning');
               const videoElement = document.getElementById(`video-${peerId}`);
               if (videoElement) videoElement.remove();
+              peerConnections.delete(peerId);
+              updatePeerCount();
             };
             
             webrtc.onConnectionStateChange = (peerId, state) => {
-              console.log(`Peer ${peerId} estado:`, state);
+              addLog(`Peer ${peerId.substring(0, 8)}... estado: ${state}`, 'info');
+              const peer = peerConnections.get(peerId);
+              if (peer) {
+                peer.state = state;
+                updateVideoStatus(peerId, state);
+              }
             };
             
             await webrtc.setLocalStream(localStream);
+            addLog(`Uniéndose a room: ${roomId}`, 'info');
             await webrtc.joinRoom(roomId);
             
             addVideoElement('local', localStream, usuario + ' (Tú)', true);
             document.getElementById('roomName').textContent = roomId;
+            addLog('Esperando otros participantes...', 'info');
           } catch (error) {
+            addLog(`Error al acceder a medios: ${error.message}`, 'error');
             console.error('Error al acceder a medios:', error);
-            alert('Error al acceder a cámara/micrófono');
+            alert('Error al acceder a cámara/micrófono: ' + error.message);
           }
+        } else {
+          addLog('Error al identificarse', 'error');
         }
       });
     };
+
+    function updateVideoStatus(peerId, state) {
+      const videoItem = document.getElementById(`video-${peerId}`);
+      if (videoItem) {
+        let statusEl = videoItem.querySelector('.video-status');
+        if (!statusEl) {
+          statusEl = document.createElement('div');
+          statusEl.className = 'video-status';
+          videoItem.appendChild(statusEl);
+        }
+        statusEl.textContent = state;
+        statusEl.className = `video-status ${state}`;
+      }
+    }
 
     window.enviarMensaje = function() {
       const texto = document.getElementById('texto').value.trim();
@@ -380,6 +609,10 @@
     }
 
     function addVideoElement(id, stream, label, muted = false) {
+      // Remover empty state si existe
+      const emptyState = document.querySelector('.empty-state');
+      if (emptyState) emptyState.remove();
+      
       const container = document.createElement('div');
       container.className = 'video-item';
       container.id = `video-${id}`;
@@ -403,16 +636,19 @@
       audioEnabled = !audioEnabled;
       if (webrtc) webrtc.toggleAudio(audioEnabled);
       document.getElementById('audioBtn').classList.toggle('active', audioEnabled);
+      addLog(`Audio ${audioEnabled ? 'activado' : 'desactivado'}`, 'info');
     };
 
     window.toggleVideo = function() {
       videoEnabled = !videoEnabled;
       if (webrtc) webrtc.toggleVideo(videoEnabled);
       document.getElementById('videoBtn').classList.toggle('active', videoEnabled);
+      addLog(`Video ${videoEnabled ? 'activado' : 'desactivado'}`, 'info');
     };
 
     window.shareScreen = async function() {
       try {
+        addLog('Solicitando compartir pantalla...', 'info');
         const screenStream = await navigator.mediaDevices.getDisplayMedia({
           video: true,
           audio: true
@@ -421,7 +657,9 @@
         const localVideo = document.querySelector('#video-local video');
         if (localVideo) localVideo.srcObject = screenStream;
         localStream = screenStream;
+        addLog('Pantalla compartida', 'success');
       } catch (error) {
+        addLog(`Error compartiendo pantalla: ${error.message}`, 'error');
         console.error('Error compartiendo pantalla:', error);
       }
     };
@@ -430,6 +668,19 @@
       if (webrtc) webrtc.destroy();
       if (localStream) localStream.getTracks().forEach(track => track.stop());
       window.location.reload();
+    };
+
+    // Interceptar console.log de WebRTC para mostrar en UI
+    const originalLog = console.log;
+    console.log = function(...args) {
+      originalLog.apply(console, args);
+      const message = args.join(' ');
+      if (message.includes('[WebRTC]')) {
+        const type = message.includes('Error') || message.includes('falló') ? 'error' :
+                     message.includes('completado') || message.includes('recibido') ? 'success' :
+                     message.includes('estado') ? 'info' : 'info';
+        addLog(message.replace('[WebRTC] ', ''), type);
+      }
     };
   </script>
 </body>
